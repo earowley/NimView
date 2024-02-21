@@ -1,11 +1,10 @@
 # Package
 
-version       = "0.1.0"
+version       = "0.0.2"
 author        = "Eric Rowley"
-description   = "Nim WebUI Application"
+description   = "A library to simplify WebUI for Nim programmers."
 license       = "MIT"
-srcDir        = "backend"
-bin           = @["nimview"]
+srcDir        = "src"
 
 
 # Dependencies
