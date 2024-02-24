@@ -1,8 +1,8 @@
 # Package
 
-version       = "0.0.2"
+version       = "1.0.0"
 author        = "Eric Rowley"
-description   = "A library to simplify WebUI for Nim programmers."
+description   = "Simple WebUI bindings for Nim"
 license       = "MIT"
 srcDir        = "src"
 

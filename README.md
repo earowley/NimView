@@ -5,7 +5,7 @@ A library to simplify WebUI bindings for Nim. This makes it simple to create a f
 # Features
 
 * Complete Nim bindings to WebUI
-* A powerful macro binding system
+* A powerful binding system powered by Nim macros
  * Bind (most) functions from a single call
  * Use async the same as you would in Nim
 

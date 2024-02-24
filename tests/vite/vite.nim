@@ -5,13 +5,15 @@ const
   port    = 5173
   pageUri = fmt"http://localhost:{port}"
 
-proc addFromNim(a, b: int): int = a + b
+proc accumulate(data: seq[int]): int =
+  for i in data:
+    result += i
 
 proc main =
   let win = newWindow()
-  win.title = "Basic Nim callback"
+  win.title = "Vite Tests"
   win.size = (800, 600)
-  win.bind("addFromNim", addFromNim)
+  win.bind("accumulate", accumulate)
   win.navigate(pageUri)
   win.run()
 
