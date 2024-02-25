@@ -1,14 +1,19 @@
 import std/os
 import std/macros
 import std/json
+import std/syncio
+import std/tables
+import std/strutils
+import std/strformat
 import std/asyncdispatch
+import std/asynchttpserver
 import futhark
 import ./private/buildmeta
 
 const
-  debugMode = defined(debug) or not defined(release)
-  webviewBase = bdir / "lib" / "webview"
-  linkerFlags = when hostOS == "macosx":
+  serveDirPort = 5173
+  webviewBase  = bdir / "lib" / "webview"
+  linkerFlags  = when hostOS == "macosx":
     "-framework WebKit"
   else:
     {.error: "Unsupported OS: " & hostOS.}
@@ -58,7 +63,7 @@ proc `=destroy`(self: WindowObj) =
 
 proc `=copy`(dst: var WindowObj, src: WindowObj) {.error.}
 
-proc newWindow*(debug: bool = debugMode): Window =
+proc newWindow*(debug: bool): Window =
   let raw = webview_create(debug.cint, nil)
   if raw == nil:
     raise newException(WindowError, "Error creating webview window")
@@ -83,6 +88,50 @@ proc navigate*(self: Window, url: string) =
 
 proc run*(self: Window) =
   webview_run(self.raw)
+
+proc serveDir(path: string) {.thread.} =
+  let server = newAsyncHttpServer()
+  waitFor server.serve(Port(serveDirPort)) do (req: Request) -> Future[void] {.async.}:
+    let adjustedPath = if req.url.path == "/":
+      "index.html"
+    else:
+      req.url.path
+    let reqPath = path / adjustedPath
+    if not fileExists(reqPath):
+      await req.respond(Http404, "")
+      return
+    let dot = adjustedPath.rfind('.')
+    let contentType = if dot == -1:
+      "text/plain"
+    else:
+      let ext = adjustedPath[dot+1..^1]
+      case ext
+      of "html":
+        "text/html"
+      of "js":
+        "text/javascript"
+      of "css":
+        "text/css"
+      else:
+        var tmp = "text/plain"
+        if req.headers.hasKey("accept"):
+          for acceptType in req.headers.table["accept"]:
+            if ext in acceptType:
+              tmp = acceptType
+              break
+        tmp
+    await req.respond(Http200, readFile(reqPath), newHttpHeaders({"Content-type": fmt"{contentType}; charset=utf-8"}))
+
+proc runAppDir*(self: Window, path: string) =
+  if not dirExists(path):
+    raise newException(WindowError, fmt"Unable to serve directory '{path}': does not exist")
+  let index = path / "index.html"
+  if not fileExists(index):
+    raise newException(WindowError, fmt"Unable to serve directory '{path}': {index} does not exist")
+  var serveThread: Thread[string]
+  createThread(serveThread, serveDir, path)
+  self.navigate(fmt"http://localhost:{serveDirPort}/")
+  self.run()
 
 proc terminate*(self: Window) =
   webview_terminate(self.raw)
