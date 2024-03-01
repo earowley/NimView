@@ -11,7 +11,7 @@ A library to simplify WebUI bindings for Nim. This makes it simple to create a f
 
 # Example
 
-An example pulled directly from the tests directory:
+A simple example showing how to setup a Window and bind Nim functions:
 
 ```nim
 import std/strformat
@@ -37,12 +37,16 @@ when isMainModule:
   main()
 ```
 
-From within the application:
+Bound functions can be called from the frontend logic:
 
 ```jsx
 const data = [1, 2, 3, 4, 5];
 console.log(await accumulate(data));
 ```
+
+The full example can be seen under tests/vite:
+
+![Vite Example Demo](tests/vite/demo.gif)
 
 # Restrictions
 

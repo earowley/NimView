@@ -24,8 +24,8 @@ function App() {
       <h1>Vite + React + Nim</h1>
       <div className="card">
         <button onClick={async () => {
-          let sr = accumulate(val);
-          setSyncResult(await sr);
+          let sum = await accumulate(val);
+          setSyncResult(`Sum of ${val.toString()}: ${sum}`);
         }}>
           Test Bindings
         </button>
